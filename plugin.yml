@@ -1,0 +1,10 @@
+name: UltimateSpleef
+version: 1.0.0
+description: Play automated spleef on your own server!
+author: Ultimate 
+main: me.ultimate.UltimateSpleef.UltimateSpleef
+
+commands:
+  spleef:
+    description: The main spleef command
+    usage: /<command> [args]
