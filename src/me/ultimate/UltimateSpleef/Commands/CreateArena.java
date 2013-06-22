@@ -1,11 +1,13 @@
 package me.ultimate.UltimateSpleef.Commands;
 
+import me.ultimate.UltimateSpleef.UltimateSpleef;
+
 import org.bukkit.entity.Player;
 
 public class CreateArena implements BaseCommand {
 
     @Override
-    public void perform(Player p, String args) {
+    public void perform(UltimateSpleef US, Player p, String args) {
         
     }
 

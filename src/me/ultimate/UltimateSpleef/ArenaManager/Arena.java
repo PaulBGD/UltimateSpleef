@@ -57,28 +57,38 @@ public class Arena {
     public void saveArenaBoard(Player p) {
         File targetFile = arenaBoard;
         SchematicFormat format = SchematicFormat.MCEDIT;
-        try {
-            CuboidClipboard clipboard = US.getWorldEdit().getSession(p).getClipboard();
-            format.save(clipboard, targetFile);
+            CuboidClipboard clipboard;
+            try {
+                clipboard = US.getWorldEdit().getSession(p).getClipboard();
+                format.save(clipboard, targetFile);
+            } catch (EmptyClipboardException e) {
+                US.sendError(e, "Could not save schematic to file");
+            } catch (IOException e) {
+                US.sendError(e, "Could not save schematic to file");
+            } catch (DataException e) {
+                US.sendError(e, "Could not save schematic to file");
+            }
             config.set("PasteLocation.x", p.getLocation().getBlockX());
             config.set("PasteLocation.y", p.getLocation().getBlockY());
             config.set("PasteLocation.z", p.getLocation().getBlockZ());
-        } catch (IOException | DataException | EmptyClipboardException e) {
-            US.sendError(e, "Could not save schematic to file");
-        }
     }
 
     public void loadArenaBoard() {
         File targetFile = arenaBoard;
         SchematicFormat format = SchematicFormat.MCEDIT;
         EditSession es = new EditSession(new BukkitWorld(null), 9999999);
-        try {
-            CuboidClipboard clip = format.load(targetFile);
-            clip.paste(es, BukkitUtil.toVector(new Location(arenaWorld, config.getInt("PasteLocation.x"), config
-                    .getInt("PasteLocation.y"), config.getInt("z"))), false);
-        } catch (IOException | DataException | MaxChangedBlocksException e) {
-            US.sendError(e, "Could not paste Arena Schematic");
-        }
+            CuboidClipboard clip;
+            try {
+                clip = format.load(targetFile);
+                clip.paste(es, BukkitUtil.toVector(new Location(arenaWorld, config.getInt("PasteLocation.x"), config
+                        .getInt("PasteLocation.y"), config.getInt("z"))), false);
+            } catch (IOException e) {
+                US.sendError(e, "Could not load/paste schematic");
+            } catch (DataException e) {
+                US.sendError(e, "Could not load/paste schematic");
+            } catch (MaxChangedBlocksException e) {
+                US.sendError(e, "Could not load/paste schematic");
+            }
     }
 
     public String getName() {

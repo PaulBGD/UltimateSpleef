@@ -15,7 +15,7 @@ import org.bukkit.entity.Player;
 public class ArenaManager {
 
     HashMap<String, Arena> arenas = new HashMap<String, Arena>();
-    static List<Arena> arenaDefault = new ArrayList<Arena>();
+    public static List<Arena> arenaDefault = new ArrayList<Arena>();
 
     UltimateSpleef US;
 

@@ -19,6 +19,7 @@ public class SpleefCommand implements CommandExecutor {
     public SpleefCommand(UltimateSpleef US) {
         this.US = US;
         registerArgument(new CreateArena());
+        registerArgument(new Join());
     }
 
     @Override
@@ -41,7 +42,7 @@ public class SpleefCommand implements CommandExecutor {
                     if (args.length - 1 == argsNeeded) {
                         if (p.hasPermission(cmdClass.getPermission())
                                 || p.hasPermission("UltimateSpleef." + cmdClass.getCommand())) {
-                            cmdClass.perform(p, args[1]);
+                            cmdClass.perform(US, p, args[1]);
                             return true;
                         } else {
                             US.send(p,
