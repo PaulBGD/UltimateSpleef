@@ -1,3 +1,4 @@
+//Arena Object
 package me.ultimate.UltimateSpleef.ArenaManager;
 
 import java.io.File;
@@ -7,7 +8,9 @@ import java.util.List;
 
 import me.ultimate.UltimateSpleef.UltimateSpleef;
 import me.ultimate.UltimateSpleef.Utils;
+import me.ultimate.UltimateSpleef.Enums.RoR;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -33,11 +36,22 @@ public class Arena {
     List<String> arenaPlayers = new ArrayList<String>();
     boolean running = false;
     List<Location> arenaBlocks = new ArrayList<Location>();
-    FileConfiguration config = YamlConfiguration.loadConfiguration(new File(US.dataFolder + File.separator + "Arenas/"
-            + arenaName + "Arena.yml"));
+    File configFile = new File(US.dataFolder + File.separator + "Arenas/" + arenaName + "Arena.yml");
+    FileConfiguration config = YamlConfiguration.loadConfiguration(configFile);
     int lowestY;
+    RoR costType = RoR.None;
+    RoR rewardType;
+    String reward;
+    int cost;
+    Location endLoc;
+    Location joinLoc;
 
     public Arena(String arenaName, World arenaWorld, UltimateSpleef US) {
+        try {
+            config.save(configFile);
+        } catch (IOException e) {
+            US.sendError(e, "Couldn't save/reload " + arenaName + "'s config file!");
+        }
         this.arenaName = arenaName;
         this.arenaWorld = arenaWorld;
         this.US = US;
@@ -52,43 +66,50 @@ public class Arena {
         Location loc2 = new Location(arenaWorld, x2, y2, z2);
         arenaBlocks = Utils.blocksFromTwoPoints(loc1, loc2);
         lowestY = getLowestY();
+        if (getConfig().getString("CostType").equalsIgnoreCase("Money")) {
+            costType = RoR.Money;
+        }
+        reward = getConfig().getString("Reward");
+        cost = getConfig().getInt("Cost");
+        joinLoc = US.Utils.getLocation("Join", config);
+        endLoc = US.Utils.getLocation("End", config);
     }
 
     public void saveArenaBoard(Player p) {
         File targetFile = arenaBoard;
         SchematicFormat format = SchematicFormat.MCEDIT;
-            CuboidClipboard clipboard;
-            try {
-                clipboard = US.getWorldEdit().getSession(p).getClipboard();
-                format.save(clipboard, targetFile);
-            } catch (EmptyClipboardException e) {
-                US.sendError(e, "Could not save schematic to file");
-            } catch (IOException e) {
-                US.sendError(e, "Could not save schematic to file");
-            } catch (DataException e) {
-                US.sendError(e, "Could not save schematic to file");
-            }
-            config.set("PasteLocation.x", p.getLocation().getBlockX());
-            config.set("PasteLocation.y", p.getLocation().getBlockY());
-            config.set("PasteLocation.z", p.getLocation().getBlockZ());
+        CuboidClipboard clipboard;
+        try {
+            clipboard = US.getWorldEdit().getSession(p).getClipboard();
+            format.save(clipboard, targetFile);
+        } catch (EmptyClipboardException e) {
+            US.sendError(e, "Could not save schematic to file");
+        } catch (IOException e) {
+            US.sendError(e, "Could not save schematic to file");
+        } catch (DataException e) {
+            US.sendError(e, "Could not save schematic to file");
+        }
+        config.set("PasteLocation.x", p.getLocation().getBlockX());
+        config.set("PasteLocation.y", p.getLocation().getBlockY());
+        config.set("PasteLocation.z", p.getLocation().getBlockZ());
     }
 
     public void loadArenaBoard() {
         File targetFile = arenaBoard;
         SchematicFormat format = SchematicFormat.MCEDIT;
         EditSession es = new EditSession(new BukkitWorld(null), 9999999);
-            CuboidClipboard clip;
-            try {
-                clip = format.load(targetFile);
-                clip.paste(es, BukkitUtil.toVector(new Location(arenaWorld, config.getInt("PasteLocation.x"), config
-                        .getInt("PasteLocation.y"), config.getInt("z"))), false);
-            } catch (IOException e) {
-                US.sendError(e, "Could not load/paste schematic");
-            } catch (DataException e) {
-                US.sendError(e, "Could not load/paste schematic");
-            } catch (MaxChangedBlocksException e) {
-                US.sendError(e, "Could not load/paste schematic");
-            }
+        CuboidClipboard clip;
+        try {
+            clip = format.load(targetFile);
+            clip.paste(es, BukkitUtil.toVector(new Location(arenaWorld, config.getInt("PasteLocation.x"), config
+                    .getInt("PasteLocation.y"), config.getInt("z"))), false);
+        } catch (IOException e) {
+            US.sendError(e, "Could not load/paste schematic");
+        } catch (DataException e) {
+            US.sendError(e, "Could not load/paste schematic");
+        } catch (MaxChangedBlocksException e) {
+            US.sendError(e, "Could not load/paste schematic");
+        }
     }
 
     public String getName() {
@@ -116,7 +137,10 @@ public class Arena {
     }
 
     public void endArena() {
-
+        for (String pName : this.getPlayers()) {
+            Player p = Bukkit.getPlayer(pName);
+            p.teleport(endLoc);
+        }
     }
 
     public void startArena() {
@@ -132,13 +156,34 @@ public class Arena {
     public boolean isArenaBlock(Block block) {
         return isArenaBlock(block.getLocation());
     }
-    
-    public int getLowestY(){
+
+    public int getLowestY() {
         int y = 256;
-        for(Location loc : arenaBlocks){
-            if(loc.getBlockY() < 256)
+        for (Location loc : arenaBlocks) {
+            if (loc.getBlockY() < 256)
                 y = loc.getBlockX();
         }
         return y;
     }
+
+    public FileConfiguration getConfig() {
+        return config;
+    }
+
+    public RoR getRewardType() {
+        return rewardType;
+    }
+
+    public RoR getCostType() {
+        return costType;
+    }
+
+    public String getReward() {
+        return reward;
+    }
+
+    public int getCost() {
+        return cost;
+    }
+
 }

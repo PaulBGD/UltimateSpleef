@@ -4,6 +4,7 @@ import me.ultimate.UltimateSpleef.UltimateSpleef;
 import me.ultimate.UltimateSpleef.ArenaManager.Arena;
 import me.ultimate.UltimateSpleef.ArenaManager.ArenaManager;
 import me.ultimate.UltimateSpleef.CustomEvents.PlayerArenaJoinEvent;
+import me.ultimate.UltimateSpleef.Enums.RoR;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -21,9 +22,21 @@ public class Join implements BaseCommand {
             }
         }
         if (!cont) {
-            //Arena exists! Annnnd I forgot to check if the player has the item/money required to join..
-            Arena.addPlayer(p);
-            Bukkit.getPluginManager().callEvent(new PlayerArenaJoinEvent(p, Arena));
+            RoR type = Arena.getCostType();
+            int cost = Arena.getCost();
+            if (type.equals(RoR.Money)) {
+                if (US.econ.getBalance(p.getName()) >= cost) {
+                    PlayerArenaJoinEvent event = new PlayerArenaJoinEvent(p, Arena);
+                    Bukkit.getPluginManager().callEvent(event);
+                    if (!event.isCancelled()) {
+                        Arena.addPlayer(p);
+                        US.econ.withdrawPlayer(p.getName(), cost);
+                    }
+                } else {
+                    int needed = (int) (cost - US.econ.getBalance(p.getName()));
+                    US.send(p, US.NOT_ENOUGH_MONEY.replaceAll("%bal%", needed + ""));
+                }
+            }
         } else {
             //The arena doesn't exist!
             US.send(p, US.ARENA_DOESNT_EXIST.replaceAll("%arena%", args.toLowerCase()));

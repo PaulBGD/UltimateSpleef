@@ -1,9 +1,10 @@
 package me.ultimate.UltimateSpleef.Enums;
 
-public enum RewardType {
+public enum RoR {
 
     Money,
     Item,
-    Command
+    Command,
+    None
     
 }
